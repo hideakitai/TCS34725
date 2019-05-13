@@ -173,6 +173,40 @@ public:
         write8(Reg::PERS, data);
     }
 
+    void write8(Reg reg, uint8_t value)
+    {
+        wire->beginTransmission(I2C_ADDR);
+        wire->write(COMMAND_BIT | (uint8_t)reg);
+        wire->write(value);
+        wire->endTransmission();
+    }
+
+    uint8_t read8(Reg reg)
+    {
+        wire->beginTransmission(I2C_ADDR);
+        wire->write(COMMAND_BIT | (uint8_t)reg);
+        wire->endTransmission();
+        wire->requestFrom(I2C_ADDR, (uint8_t)1);
+        return wire->read();
+    }
+
+    uint16_t read16(Reg reg)
+    {
+        uint16_t x;
+        uint16_t t;
+
+        wire->beginTransmission(I2C_ADDR);
+        wire->write(COMMAND_BIT | (uint8_t)reg);
+        wire->endTransmission();
+
+        wire->requestFrom(I2C_ADDR, (uint8_t)2);
+        t = wire->read();
+        x = wire->read();
+        x <<= 8;
+        x |= t;
+        return x;
+    }
+
 private:
 
     void update()
@@ -233,40 +267,6 @@ private:
 
         // CT Calculations (DN40 3.4)
         color_temp = CT_Coef * b2 / r2 + CT_Offset;
-    }
-
-    void write8(Reg reg, uint8_t value)
-    {
-        wire->beginTransmission(I2C_ADDR);
-        wire->write(COMMAND_BIT | (uint8_t)reg);
-        wire->write(value);
-        wire->endTransmission();
-    }
-
-    uint8_t read8(Reg reg)
-    {
-        wire->beginTransmission(I2C_ADDR);
-        wire->write(COMMAND_BIT | (uint8_t)reg);
-        wire->endTransmission();
-        wire->requestFrom(I2C_ADDR, (uint8_t)1);
-        return wire->read();
-    }
-
-    uint16_t read16(Reg reg)
-    {
-        uint16_t x;
-        uint16_t t;
-
-        wire->beginTransmission(I2C_ADDR);
-        wire->write(COMMAND_BIT | (uint8_t)reg);
-        wire->endTransmission();
-
-        wire->requestFrom(I2C_ADDR, (uint8_t)2);
-        t = wire->read();
-        x = wire->read();
-        x <<= 8;
-        x |= t;
-        return x;
     }
 
 
