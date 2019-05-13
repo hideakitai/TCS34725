@@ -125,11 +125,11 @@ public:
         return b;
     }
 
-    const Color& color() { return clr; }
+    const Color& color() const { return clr; }
 
     void scale(float s) { scaling = s; }
 
-    void raw(uint16_t& r, uint16_t& g, uint16_t& b, uint16_t& c)
+    void raw(uint16_t& r, uint16_t& g, uint16_t& b, uint16_t& c) const
     {
         r = raw_data[0];
         g = raw_data[1];
@@ -137,8 +137,8 @@ public:
         c = raw_data[3];
     }
 
-    float lux() { return lx; }
-    float colorTemperature() { return color_temp; }
+    float lux() const { return lx; }
+    float colorTemperature() const { return color_temp; }
     void enableColorTempAndLuxCalculation(bool b) { b_ct_lux_calc = b; }
 
     // The Glass Attenuation (FA) factor used to compensate for lower light
