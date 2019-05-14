@@ -24,6 +24,7 @@ class TCS34725_
 public:
 
     struct Color { float r, g, b; };
+    struct RawData { uint16_t r, g, b, c; };
 
     enum class Reg : uint8_t
     {
@@ -126,16 +127,9 @@ public:
     }
 
     const Color& color() const { return clr; }
+    const RawData& raw() const { return raw_data; }
 
     void scale(float s) { scaling = s; }
-
-    void raw(uint16_t& r, uint16_t& g, uint16_t& b, uint16_t& c) const
-    {
-        r = raw_data[0];
-        g = raw_data[1];
-        b = raw_data[2];
-        c = raw_data[3];
-    }
 
     float lux() const { return lx; }
     float colorTemperature() const { return color_temp; }
@@ -211,18 +205,17 @@ private:
 
     void update()
     {
-        uint16_t r, g, b, c;
-        raw_data[0] = r = read16(Reg::RDATAL);
-        raw_data[1] = g = read16(Reg::GDATAL);
-        raw_data[2] = b = read16(Reg::BDATAL);
-        raw_data[3] = c = read16(Reg::CDATAL);
+        raw_data.r = read16(Reg::RDATAL);
+        raw_data.g = read16(Reg::GDATAL);
+        raw_data.b = read16(Reg::BDATAL);
+        raw_data.c = read16(Reg::CDATAL);
 
-        if (c == 0) clr.r = clr.g = clr.b = 0;
+        if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
         else
         {
-            clr.r = pow((float)r / (float)c, scaling) * 255.f;
-            clr.g = pow((float)g / (float)c, scaling) * 255.f;
-            clr.b = pow((float)b / (float)c, scaling) * 255.f;
+            clr.r = pow((float)raw_data.r / (float)raw_data.c, scaling) * 255.f;
+            clr.g = pow((float)raw_data.g / (float)raw_data.c, scaling) * 255.f;
+            clr.b = pow((float)raw_data.b / (float)raw_data.c, scaling) * 255.f;
             if (clr.r > 255.f) clr.r = 255.f;
             if (clr.g > 255.f) clr.g = 255.f;
             if (clr.b > 255.f) clr.b = 255.f;
@@ -249,16 +242,16 @@ private:
             saturation -= saturation / 4;
 
         // Check for saturation and mark the sample as invalid if true
-        if (raw_data[3] >= saturation)
+        if (raw_data.c >= saturation)
             return;
 
         // IR Rejection (DN40 3.1)
-        float sum = raw_data[0] + raw_data[1] + raw_data[2];
-        float c = raw_data[3];
+        float sum = raw_data.r + raw_data.g + raw_data.b;
+        float c = raw_data.c;
         float ir = (sum > c) ? ((sum - c) / 2.f) : 0.f;
-        float r2 = raw_data[0] - ir;
-        float g2 = raw_data[1] - ir;
-        float b2 = raw_data[2] - ir;
+        float r2 = raw_data.r - ir;
+        float g2 = raw_data.g - ir;
+        float b2 = raw_data.b - ir;
 
         // Lux Calculation (DN40 3.2)
         float g1 = R_Coef * r2 + G_Coef * g2 + B_Coef * b2;
@@ -277,7 +270,7 @@ private:
     bool b_ct_lux_calc {true};
     float lx;
     float color_temp;
-    uint16_t raw_data[4];
+    RawData raw_data;
     Color clr;
     float gain_value {1.f};
     uint8_t atime {0xFF};

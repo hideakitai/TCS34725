@@ -30,12 +30,12 @@ void loop(void)
         Serial.print("G          : "); Serial.println(color.g);
         Serial.print("B          : "); Serial.println(color.b);
 
-        uint16_t r, g, b, c;
-        tcs.raw(r, g, b, c);
-        Serial.print("Raw R      : "); Serial.println(r);
-        Serial.print("Raw G      : "); Serial.println(g);
-        Serial.print("Raw B      : "); Serial.println(b);
-        Serial.print("Raw C      : "); Serial.println(c);
+
+        TCS34725::RawData raw = tcs.raw();
+        Serial.print("Raw R      : "); Serial.println(raw.r);
+        Serial.print("Raw G      : "); Serial.println(raw.g);
+        Serial.print("Raw B      : "); Serial.println(raw.b);
+        Serial.print("Raw C      : "); Serial.println(raw.c);
 
         prev_ms = millis();
     }
