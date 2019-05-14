@@ -161,7 +161,7 @@ Please see [this library](https://github.com/adafruit/Adafruit_CircuitPython_TCS
         BDATAH = 0x1B,
     };
 
-    enum class Mask
+    enum class Mask : uint8_t
     {
         ENABLE_AIEN = 0x10,
         ENABLE_WEN = 0x08,

@@ -47,7 +47,7 @@ public:
         BDATAH = 0x1B,
     };
 
-    enum class Mask
+    enum class Mask : uint8_t
     {
         ENABLE_AIEN = 0x10,
         ENABLE_WEN = 0x08,
