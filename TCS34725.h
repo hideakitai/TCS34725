@@ -23,9 +23,6 @@ class TCS34725_
 
 public:
 
-    struct Color { float r, g, b; };
-    struct RawData { uint16_t r, g, b, c; };
-
     enum class Reg : uint8_t
     {
         ENABLE = 0x00,
@@ -62,6 +59,9 @@ public:
 
     enum class Gain : uint8_t { X01, X04, X16, X60 };
 
+    struct Color { float r, g, b; };
+    struct RawData { uint16_t r, g, b, c; };
+
 
     bool attach(WireType& w = Wire)
     {
@@ -91,6 +91,8 @@ public:
         }
     }
 
+    void enableColorTempAndLuxCalculation(bool b) { b_ct_lux_calc = b; }
+
     void integrationTime(float ms) // 2.4 - 614.4 ms
     {
         if (ms < INTEGRATION_TIME_MS_MIN) ms = INTEGRATION_TIME_MS_MIN;
@@ -114,6 +116,18 @@ public:
         }
     }
 
+    void scale(float s) { scaling = s; }
+
+    // The Glass Attenuation (FA) factor used to compensate for lower light
+    // levels at the device due to the possible presence of glass. The GA is
+    // the inverse of the glass transmissivity (T), so GA = 1/T. A transmissivity
+    // of 50% gives GA = 1 / 0.50 = 2. If no glass is present, use GA = 1.
+    // See Application Note: DN40-Rev 1.0 â€“ Lux and CCT Calculations using
+    // ams Color Sensors for more details.
+    void glassAttenuation(float v) { if (v < 1.f) v = 1.f; glass_attenuation = v; }
+
+    void persistence(uint16_t data) { write8(Reg::PERS, data); }
+
     bool available()
     {
         bool b = read8(Reg::STATUS) & (uint8_t)Mask::STATUS_AINT;
@@ -128,24 +142,8 @@ public:
 
     const Color& color() const { return clr; }
     const RawData& raw() const { return raw_data; }
-
-    void scale(float s) { scaling = s; }
-
     float lux() const { return lx; }
     float colorTemperature() const { return color_temp; }
-    void enableColorTempAndLuxCalculation(bool b) { b_ct_lux_calc = b; }
-
-    // The Glass Attenuation (FA) factor used to compensate for lower light
-    // levels at the device due to the possible presence of glass. The GA is
-    // the inverse of the glass transmissivity (T), so GA = 1/T. A transmissivity
-    // of 50% gives GA = 1 / 0.50 = 2. If no glass is present, use GA = 1.
-    // See Application Note: DN40-Rev 1.0 â€“ Lux and CCT Calculations using
-    // ams Color Sensors for more details.
-    void glassAttenuation(float v)
-    {
-        if (v < 1.f) v = 1.f;
-        glass_attenuation = v;
-    }
 
     void interrupt(bool b)
     {
@@ -160,11 +158,6 @@ public:
         wire->beginTransmission(I2C_ADDR);
         wire->write(COMMAND_BIT | 0x66);
         wire->endTransmission();
-    }
-
-    void persistence(uint16_t data)
-    {
-        write8(Reg::PERS, data);
     }
 
     void write8(Reg reg, uint8_t value)
