@@ -235,8 +235,10 @@ private:
             saturation -= saturation / 4;
 
         // Check for saturation and mark the sample as invalid if true
-        if (raw_data.c >= saturation)
+        if (raw_data.c >= saturation) {
+            lx = color_temp = 0;
             return;
+            }
 
         // IR Rejection (DN40 3.1)
         float sum = raw_data.r + raw_data.g + raw_data.b;
