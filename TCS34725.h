@@ -60,7 +60,7 @@ public:
     enum class Gain : uint8_t { X01, X04, X16, X60 };
 
     struct Color { float r, g, b; };
-    struct RawData { uint16_t r, g, b, c; };
+    struct __attribute__ ((packed)) RawData { uint16_t c, r, g, b; } ;
 
 
     bool attach(WireType& w = Wire)
@@ -133,7 +133,7 @@ public:
         bool b = read8(Reg::STATUS) & (uint8_t)Mask::STATUS_AINT;
         if (b)
         {
-            update();
+            readCRGB(&raw_data);
             if (b_ct_lux_calc) calcTemperatureAndLuxDN40();
             clearInterrupt();
         }
@@ -206,16 +206,20 @@ public:
         x |= t;
         return x;
     }
+    
+    void readCRGB(RawData *crgb)
+    {
+
+        wire->beginTransmission(I2C_ADDR);
+        wire->write(COMMAND_BIT | (uint8_t) Reg::CDATAL);
+        wire->endTransmission();
+
+        wire->requestFrom(I2C_ADDR, sizeof(RawData));
+        for (uint8_t i = 0; i < sizeof(RawData); i++)
+          *((uint8_t *) crgb+i) = wire->read();
+    }    
 
 private:
-
-    void update()
-    {
-        raw_data.r = read16(Reg::RDATAL);
-        raw_data.g = read16(Reg::GDATAL);
-        raw_data.b = read16(Reg::BDATAL);
-        raw_data.c = read16(Reg::CDATAL);
-    }
 
     // https://github.com/adafruit/Adafruit_CircuitPython_TCS34725/blob/master/adafruit_tcs34725.py
     void calcTemperatureAndLuxDN40()
@@ -257,14 +261,14 @@ private:
         color_temp = CT_Coef * b2 / r2 + CT_Offset;
     }
 
-
     WireType* wire;
     float scaling {2.5f};
-
+    
     // for lux & temperature
     bool b_ct_lux_calc {true};
     float lx;
     float color_temp;
+        
     RawData raw_data;
     Color clr;
     float gain_value {1.f};

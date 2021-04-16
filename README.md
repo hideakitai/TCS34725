@@ -23,6 +23,7 @@ void setup(void)
     Serial.begin(115200);
 
     Wire.begin();
+    // Wire.setClock(400000); // set maximum sensor readout speed (400kHz)
     if (!tcs.attach(Wire))
         Serial.println("ERROR: TCS34725 NOT FOUND !!!");
 
@@ -106,7 +107,7 @@ Please see [this library](https://github.com/adafruit/Adafruit_CircuitPython_TCS
 
 ``` C++
     struct Color { float r, g, b; };
-    struct RawData { uint16_t r, g, b, c; };
+    struct RawData { uint16_t c, r, g, b};
 
     bool attach(WireType& w = Wire)
     void power(bool b)
@@ -132,6 +133,7 @@ Please see [this library](https://github.com/adafruit/Adafruit_CircuitPython_TCS
     void write8(Reg reg, uint8_t value)
     uint8_t read8(Reg reg)
     uint16_t read16(Reg reg)
+    void readCRGB(RawData *crgb)
 ```
 
 ## Raw Register Manipulation

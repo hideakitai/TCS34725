@@ -7,6 +7,7 @@ void setup(void)
     Serial.begin(115200);
 
     Wire.begin();
+    // Wire.setClock(400000); // set maximum sensor readout speed (400kHz)    
     if (!tcs.attach(Wire))
         Serial.println("ERROR: TCS34725 NOT FOUND !!!");
 
