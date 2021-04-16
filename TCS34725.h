@@ -140,7 +140,20 @@ public:
         return b;
     }
 
-    const Color& color() const { return clr; }
+    const Color& color() const { 
+      if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
+      else
+      {
+          clr.r = pow((float)raw_data.r / (float)raw_data.c, scaling) * 255.f;
+          clr.g = pow((float)raw_data.g / (float)raw_data.c, scaling) * 255.f;
+          clr.b = pow((float)raw_data.b / (float)raw_data.c, scaling) * 255.f;
+          if (clr.r > 255.f) clr.r = 255.f;
+          if (clr.g > 255.f) clr.g = 255.f;
+          if (clr.b > 255.f) clr.b = 255.f;
+      }
+      return clr; 
+    }
+    
     const RawData& raw() const { return raw_data; }
     float lux() const { return lx; }
     float colorTemperature() const { return color_temp; }
@@ -202,17 +215,6 @@ private:
         raw_data.g = read16(Reg::GDATAL);
         raw_data.b = read16(Reg::BDATAL);
         raw_data.c = read16(Reg::CDATAL);
-
-        if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
-        else
-        {
-            clr.r = pow((float)raw_data.r / (float)raw_data.c, scaling) * 255.f;
-            clr.g = pow((float)raw_data.g / (float)raw_data.c, scaling) * 255.f;
-            clr.b = pow((float)raw_data.b / (float)raw_data.c, scaling) * 255.f;
-            if (clr.r > 255.f) clr.r = 255.f;
-            if (clr.g > 255.f) clr.g = 255.f;
-            if (clr.b > 255.f) clr.b = 255.f;
-        }
     }
 
     // https://github.com/adafruit/Adafruit_CircuitPython_TCS34725/blob/master/adafruit_tcs34725.py
