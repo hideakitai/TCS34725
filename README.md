@@ -106,7 +106,7 @@ Please see [this library](https://github.com/adafruit/Adafruit_CircuitPython_TCS
 
 ``` C++
     struct Color { float r, g, b; };
-    struct RawData { float r, g, b, c; };
+    struct RawData { uint16_t r, g, b, c; };
 
     bool attach(WireType& w = Wire)
     void power(bool b)
