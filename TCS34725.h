@@ -208,11 +208,6 @@ private:
 
     void update()
     {
-        raw_data.r = read16(Reg::RDATAL);
-        raw_data.g = read16(Reg::GDATAL);
-        raw_data.b = read16(Reg::BDATAL);
-        raw_data.c = read16(Reg::CDATAL);
-
         wire->beginTransmission(I2C_ADDR);
         wire->write(COMMAND_BIT | (uint8_t) Reg::CDATAL);
         wire->endTransmission();
