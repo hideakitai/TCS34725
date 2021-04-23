@@ -60,7 +60,17 @@ public:
     enum class Gain : uint8_t { X01, X04, X16, X60 };
 
     struct Color { float r, g, b; };
-    struct RawData { uint16_t r, g, b, c; };
+    union RawData
+    {
+        struct
+        {
+            uint16_t c;
+            uint16_t r;
+            uint16_t g;
+            uint16_t b;
+        };
+        uint8_t raw[sizeof(uint16_t) * 4];
+    };
 
 
     bool attach(WireType& w = Wire)
@@ -202,6 +212,13 @@ private:
         raw_data.g = read16(Reg::GDATAL);
         raw_data.b = read16(Reg::BDATAL);
         raw_data.c = read16(Reg::CDATAL);
+
+        wire->beginTransmission(I2C_ADDR);
+        wire->write(COMMAND_BIT | (uint8_t) Reg::CDATAL);
+        wire->endTransmission();
+        wire->requestFrom(I2C_ADDR, sizeof(RawData));
+        for (uint8_t i = 0; i < sizeof(RawData); i++)
+            raw_data.raw[i] = wire->read();
 
         if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
         else
