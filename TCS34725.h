@@ -150,7 +150,19 @@ public:
         return b;
     }
 
-    const Color& color() const { return clr; }
+    const Color& color() {
+        if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
+        else
+        {
+            clr.r = pow((float)raw_data.r / (float)raw_data.c, scaling) * 255.f;
+            clr.g = pow((float)raw_data.g / (float)raw_data.c, scaling) * 255.f;
+            clr.b = pow((float)raw_data.b / (float)raw_data.c, scaling) * 255.f;
+            if (clr.r > 255.f) clr.r = 255.f;
+            if (clr.g > 255.f) clr.g = 255.f;
+            if (clr.b > 255.f) clr.b = 255.f;
+        }
+        return clr;
+    }
     const RawData& raw() const { return raw_data; }
     float lux() const { return lx; }
     float colorTemperature() const { return color_temp; }
@@ -214,17 +226,6 @@ private:
         wire->requestFrom(I2C_ADDR, sizeof(RawData));
         for (uint8_t i = 0; i < sizeof(RawData); i++)
             raw_data.raw[i] = wire->read();
-
-        if (raw_data.c == 0) clr.r = clr.g = clr.b = 0;
-        else
-        {
-            clr.r = pow((float)raw_data.r / (float)raw_data.c, scaling) * 255.f;
-            clr.g = pow((float)raw_data.g / (float)raw_data.c, scaling) * 255.f;
-            clr.b = pow((float)raw_data.b / (float)raw_data.c, scaling) * 255.f;
-            if (clr.r > 255.f) clr.r = 255.f;
-            if (clr.g > 255.f) clr.g = 255.f;
-            if (clr.b > 255.f) clr.b = 255.f;
-        }
     }
 
     // https://github.com/adafruit/Adafruit_CircuitPython_TCS34725/blob/master/adafruit_tcs34725.py
