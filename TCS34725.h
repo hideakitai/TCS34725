@@ -13,6 +13,8 @@ template <typename WireType>
 class TCS34725_
 {
     static constexpr uint8_t I2C_ADDR {0x29};
+    // TCS34721/25 ID = 0x44, TCS34723/27 ID = 0x4d
+    static constexpr uint8_t VALID_PART_IDS[] {0x44, 0x4d};
     static constexpr uint8_t COMMAND_BIT {0x80};
 
     static constexpr float INTEGRATION_CYCLES_MIN {1.f};
@@ -76,7 +78,7 @@ public:
     {
         wire = &w;
         uint8_t x = read8(Reg::ID);
-        if (x != 0x44 && x != 0x4d) return false;
+        if (x != VALID_PART_IDS[0] && x != VALID_PART_IDS[1]) return false;
 
         power(true);
         interrupt(true);   // use to detect availability (available())
